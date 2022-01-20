@@ -34,6 +34,27 @@ $MessageConfig = @{
     }
 }
 
+Enum MessageLevel {
+    DEBUG  = 1
+    INFO   = 2
+    ERROR  = 3
+    SILENT = 4
+}
+
+$global:CurrentMessageLevel = [MessageLevel]::INFO
+
+function Set-MessageLevel {
+    param(
+        [MessageLevel]$Level
+    )
+
+    $global:CurrentMessageLevel = $Level
+}
+
+function Get-MessageLevel {
+    return $global:CurrentMessageLevel
+}
+
 function Write-Info {
     param(
         [string] $Message,
@@ -41,7 +62,9 @@ function Write-Info {
         [bool]   $NoNewline = $false
     )
 
-    Do-Write-With-Config -Message $Message -Indent $Indent -Config $MessageConfig.Info -NoNewLine $NoNewline
+    if ([MessageLevel]::INFO -ge $global:CurrentMessageLevel) {
+        Do-Write-With-Config -Message $Message -Indent $Indent -Config $MessageConfig.Info -NoNewLine $NoNewline
+    }
 }
 
 function Write-Debug {
@@ -51,7 +74,9 @@ function Write-Debug {
         [bool]   $NoNewline = $false
     )
 
-    Do-Write-With-Config -Message $Message -Indent $Indent -Config $MessageConfig.Debug -NoNewLine $NoNewline
+    if ([MessageLevel]::DEBUG -ge $global:CurrentMessageLevel) {
+        Do-Write-With-Config -Message $Message -Indent $Indent -Config $MessageConfig.Debug -NoNewLine $NoNewline
+    }
 }
 
 function Write-Error {
@@ -61,7 +86,9 @@ function Write-Error {
         [bool]   $NoNewline = $false
     )
     
-    Do-Write-With-Config -Message $Message -Indent $Indent -Config $MessageConfig.Error -NoNewLine $NoNewline
+    if ([MessageLevel]::ERROR -ge $global:CurrentMessageLevel) {
+        Do-Write-With-Config -Message $Message -Indent $Indent -Config $MessageConfig.Error -NoNewLine $NoNewline
+    }
 }
 
 function Get-Input {
@@ -176,4 +203,4 @@ function Do-Write {
     }
 }
 
-Export-ModuleMember -Function Write-Info, Write-Debug, Write-Error, Get-Input, Print-Menu, Do-Write
+Export-ModuleMember -Function Write-Info, Write-Debug, Write-Error, Get-Input, Print-Menu, Do-Write, Set-MessageLevel, Get-MessageLevel
